@@ -1,33 +1,45 @@
+const EC = require('elliptic').ec;
+const ecdsa = new EC('secp256k1');
 var Block = require('./block');
 var Transaction = require('./transaction');
-class Blockchain{
+class Blockchain {
     constructor() {
         this.chain = [this.createFirstBlock()];
-        this.difficulty = 5;
+        this.difficulty = 1;
         this.pendingTransactions = [];
-        this.miningReward = 100;
+        this.miningReward = 1;
     }
     createFirstBlock() {
-        return new Block("30/05/2020", "root", "0");
+        const privateKey = '324c9e7c840765e62042b6a2ad2935b7a2e0c256aa31dc26e8d49a3317bec822';
+        const totalBChain = 10000;
+        return new Block(Date.parse('2020-05-20'), [new Transaction(null, ecdsa.keyFromPrivate(privateKey).getPublic('hex'), totalBChain)], "");
     }
 
     getLatestBlock() {
         return this.chain[this.chain.length - 1];
     }
-    minePendingTransactions(miningRewardAddress) {
-        let block = new Block(Date.now(), this.pendingTransactions, this.getLatestBlock().hash);
+
+    miningPendingTransactions(miningRewardAddress) {
+        const block = new Block(Date.now(), this.pendingTransactions, this.getLatestBlock().hash);
         block.mineBlock(this.difficulty);
         this.chain.push(block);
+        io.sockets.emit('block', JSON.stringify(block));
+        io.sockets.emit('transaction', JSON.stringify(this.pendingTransactions));
         this.pendingTransactions = [
             new Transaction(null, miningRewardAddress, this.miningReward)
         ];
     }
     createTransaction(transaction) {
+        // Making sure that the amount sent is not greater than existing balance
+        if (this.getBalanceOfAddress(transaction.fromAddress) < parseInt(transaction.amount)) {
+            return "The account has no enough money to make the transaction"
+        }
         this.pendingTransactions.push(transaction);
+        return 1;
     }
 
     isChainValid() {
-        for (let i = 1; i < this.chain.length; i++){
+        for (let i = 1; i < this.chain.length; i++) {
             const currentBlock = this.chain[i];
             const previousBlock = this.chain[i - 1];
 
@@ -41,19 +53,33 @@ class Blockchain{
         }
         return true;
     }
-    getBalanceOfAddress(address){
+    getBalanceOfAddress(address) {
         let balance = 0;
-        for(const block of this.chain){
-            for(const trans of block.transactions){
-                if(trans.fromAddress === address){
-                    balance -= trans.amount;
+        for (const block of this.chain) {
+            for (const trans of block.transactions) {
+                if (trans.fromAddress === address) {
+                    balance -= parseInt(trans.amount);
                 }
-                if(trans.toAddress === address){
-                    balance += trans.amount;
+                if (trans.toAddress === address) {
+                    balance += parseInt(trans.amount);
                 }
             }
         }
         return balance;
+    }
+    getTransactionOfAddress(address) {
+        let transactions = [];
+        for (const block of this.chain) {
+            for (const trans of block.transactions) {
+                if (trans.fromAddress == address || trans.toAddress == address) {
+                    transactions.push(trans);
+                }
+            }
+        }
+        return transactions.length > 0 ? transactions : null;
+    }
+    getListPendingTransactions() {
+        return this.pendingTransactions;
     }
 }
 module.exports = Blockchain;

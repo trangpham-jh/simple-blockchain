@@ -1,2 +1,92 @@
-<h1>{{title}}</h1>
-<p>Welcome to {{title}}</p>
+<div>
+    <div style="margin-top:20px; margin-left: 40px; max-width:900px;">
+        <p class="info">DASHBOARD</p>
+        <div class="wrap-info">
+            <p style="max-width: 50%; overflow-wrap: break-word; max-width: 700px "> Address: <span id="address"
+                    style="font-weight: bold;">{{address}}</span></p>
+            <p style="max-width: 50%; overflow-wrap: break-word; max-width: 700px ">Private key: <span id="privatekey"
+                    style="font-weight: bold;">{{privateKey}}</span></p>
+            <p>Balance: <span id="total">{{balance}}</span> BTC</p>
+        </div>
+    </div>
+
+
+    <p class="info-send">SEND</p>
+
+    <div class="wrap-chain">
+        {{#if error}}
+        <span style="color: red">{{msg}}</span>
+        {{/if}}
+        </p>
+        <form action="/create-transaction" method="post">
+
+            <input class="input-create" name="to" placeholder="Please enter the address" style="padding-left: 12px;"
+                autocomplete="off" \>
+            <br />
+            <input class="input-create" name="amount" placeholder="Amount" style="padding-left: 12px;"
+                autocomplete="off" />
+            <br />
+           
+            <button class="btn btn-success" style="padding: 5px 10px; margin-left: 77px; margin-bottom: 20px; background: white; color: black">Send</button>
+        </form>
+    </div>
+</div>
+<div style=" margin-top: 40px; margin-left: 40px;">
+    <p class="info-history">TRANSACTION HISTORY</p>
+    <table class="table" style="font-size: 13px;">
+        <thead class="thead-dark">
+            <tr>
+                <th scope="col">Sender address</th>
+                <th scope="col">Recipient address</th>
+                <th scope="col">Money</th>
+            </tr>
+        </thead>
+        <tbody id="transaction">
+            {{#if transactions}}
+            {{#each transactions}}
+            <tr>
+                {{#if fromAddress}}
+                <td style="overflow-wrap: break-word;max-width: 315px; text-align:left ; color: white">
+                    {{fromAddress}}
+                </td>
+                {{else}}
+                <td style="overflow-wrap: break-word;max-width: 315px; text-align:left; color: white ">
+                </td>
+                {{/if}}
+                <td style="overflow-wrap: break-word; max-width: 315px; text-align:left; color: white">
+                    {{toAddress}}
+                </td>
+                <td style="color: white">{{amount}}</td>
+            </tr>
+            {{/each}}
+            {{/if}}
+        </tbody>
+    </table>
+
+</div>
+
+<div style=" margin-top: 40px; margin-left: 40px">
+    <p class="info-list">LASTEST BLOCK LIST</p>
+    <table class="table" style="font-size: 13px;">
+        <thead class="thead-dark">
+            <tr>
+                <th scope="col">preHash</th>
+                <th scope="col">Hash</th>
+            </tr>
+        </thead>
+        <tbody id="list-block">
+            {{#if lastestBlocks}}
+            {{#each lastestBlocks}}
+            <tr>
+                <td style="overflow-wrap: break-word;max-width: 315px; text-align:left; color: white; ">
+                    {{previousHash}}
+                </td>
+                <td style="overflow-wrap: break-word; max-width: 315px; text-align:left; color: white;">
+                    {{hash}}
+                </td>
+            </tr>
+            {{/each}}
+            {{/if}}
+        </tbody>
+    </table>
+</div>
